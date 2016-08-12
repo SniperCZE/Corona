@@ -1,11 +1,15 @@
 #!/usr/bin/python3
 
+import configparser
 import socket
 
+config = configparser.ConfigParser()
+config.read('corona-server.conf')
+
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = socket.gethostname()
-port = 1234
-serverSocket.bind((host, port))
+host = config['Corona']['ListenAddress']
+port = config['Corona']['ListenPort']
+serverSocket.bind((host, int(port)))
 
 serverSocket.listen(5)
 while True:

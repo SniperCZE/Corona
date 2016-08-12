@@ -1,12 +1,16 @@
 #!/usr/bin/python3
 
+import configparser
 import socket
 
-clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = socket.gethostname()
-port = 1234
+config = configparser.ConfigParser()
+config.read('corona-agent.conf')
 
-clientSocket.connect((host, port))
+clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = config['Corona']['CoronaServer']
+port = config['Corona']['CoronaServerPort']
+
+clientSocket.connect((host, int(port)))
 msg=clientSocket.recv(1024)
 clientSocket.close()
 
