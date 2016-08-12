@@ -1,0 +1,44 @@
+All messages are in json format as objects with fixed structure { "message" : "MESSAGE_TYPE", "parameters" : { message parameters as below } }. Messages can be sent by server and agent, depends of type of message.
+
+List of available messages and its parameters
+=============================================
+message: AGENT_ONLINE
+sender: agent
+detail: Sent by agent when started, informs server about new agent online
+parameters:
+- hostname [string] - hostname of agent host
+- ip [string] - ip of agent host. This is used as uniq ID of agent
+- version [float] - version of agent deployed on host
+server response: AGENT_REGISTERED
+
+message: AGENT_REGISTERED
+sender: server
+detail: acknowledge of agent recognized as online by server
+parameters:
+- ip [string] - ip of agent
+- known [bool] - true if server already knows this agent's IP address, false if new agent registered
+
+message: HEALTHCHECK_PING
+sender: server
+detail: test if agent is online. Server sends this messages to all agents periodically
+parameters:
+- hcid [string] - random string. Must be uniq for each request
+- ip [string] - ip of requested agent. Agent must ignore this message if sent value is different that agents IP
+
+message: HEALTHCHECK_PONG
+sender: agent
+detail: agent acknowledges it is online
+parameters:
+- hcid [string] - same string as in HEALTHCHECK_PING message
+- ip [string] - ip of agent. Server must ignore this message if combination of hcid and ip is not valid
+
+message: SERVER_ONLINE
+sender: server
+detail: server informs all known agents about itself. Agents can start to send messages
+parameters: none
+
+message: SERVER_OFFLINE
+sender: server
+detail: server informs all known online agents about it is going to offline. Agent must stop sending all messages until SERVER_ONLINE message received
+parameters: none
+
