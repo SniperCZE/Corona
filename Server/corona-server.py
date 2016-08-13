@@ -6,6 +6,7 @@ sys.path.append('../libs')
 import configparser
 import socket
 import coronaprotocol
+import coronalogger
 
 config = configparser.ConfigParser()
 config.read('corona-server.conf')
@@ -18,6 +19,8 @@ serverSocket.bind((host, int(port)))
 serverSocket.listen(5)
 
 cp = coronaprotocol.CoronaProtocol()
+log = coronalogger.CoronaLogger()
+log.setLogTarget('stdout')
 
 while True:
     client, addr = serverSocket.accept()
@@ -25,7 +28,7 @@ while True:
     msg = client.recv(4096)
     msgDecoded = cp.decodeMessage(msg.decode('ascii'))
     
-    print(msgDecoded)
+    log.messageLog(msgDecoded)
     if msgDecoded['message'] == 'AGENT_ONLINE':
         msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
         client.send(msgReply.encode('ascii'))
