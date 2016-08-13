@@ -3,22 +3,23 @@ import os
 import sys
 sys.path.append('../libs')
 
-import threading
 import configparser
 import socket
 import coronaprotocol
+import coronalogger
 
 version = '0.1'
 cp = coronaprotocol.CoronaProtocol()
+log = coronalogger.CoronaLogger()
+log.setLogTarget('stdout')
 
-class agentServerThread (threading.Thread):
-    """Thread for accepting messages from server. It's used for healthchecks, server status messages and commands"""
+agentClientSocket = None
+
+class agentServer ():
+    """Accepting messages from server. It's used for healthchecks, server status messages and commands"""
 
     host = None
     port = None
-
-    def __init__(self):
-        threading.Thread.__init__(self)
 
     def setAgentServerDetails(self, host, port):
         self.host = host
@@ -26,7 +27,7 @@ class agentServerThread (threading.Thread):
 
     def startAgentServer(self):
         agentServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        agentServerSocket.connect((self.host, self.port))
+        agentServerSocket.bind((self.host, self.port))
         agentServerSocket.listen(5)
         while True:
             remoteServer, addr = agentServerSocket.accept()
@@ -34,11 +35,8 @@ class agentServerThread (threading.Thread):
             print('Received message from remote server: %s' % msg.decode('ascii'))
 
 
-class agentClientThread (threading.Thread):
-    """Thread for sending messages initialized by agent"""
-
-    def __init__(self):
-        threading.Thread.__init__(self)
+class agentClient ():
+    """Sending messages initialized by agent"""
 
     serverHost = ''
     serverPort = 0
@@ -77,16 +75,16 @@ agentPort = config['Corona']['ListenPort']
 serverHost = config['Corona']['CoronaServer']
 serverPort = config['Corona']['CoronaServerPort']
 
-# thread used to receiving messages sent directly from server
-agentServerSocketThread = agentServerThread()
-# @type agentServerSocketThread agentServerThread
-agentServerSocketThread.setAgentServerDetails(agentIp, agentPort)
-#agentServerSocketThread.startAgentServer()
+agentServer = agentServer()
+agentServer.setAgentServerDetails(agentIp, agentPort)
 
 # thread user for sending messages into server
-agentClientSocketThread = agentClientThread()
-# @type agentClientSocketThread agentClientThread
-agentClientSocketThread.setServerDetails(serverHost, serverPort)
-msg=agentClientSocketThread.sendMessage(cp.agentIsOnline(agentIp, agentPort, version))
+agentClientSocket = agentClient()
+# @type agentClientSocket agentClient
+agentClientSocket.setServerDetails(serverHost, serverPort)
+
+msg=agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, version))
 
 print (msg)
+
+agentServer.startAgentServer()
