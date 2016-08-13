@@ -6,8 +6,8 @@ message: AGENT_ONLINE
 sender: agent
 detail: Sent by agent when started, informs server about new agent online
 parameters:
-- hostname [string] - hostname of agent host
 - ip [string] - ip of agent host. This is used as uniq ID of agent
+- port [integer] - tcp port where agent is listening on
 - version [float] - version of agent deployed on host
 server response: AGENT_REGISTERED
 

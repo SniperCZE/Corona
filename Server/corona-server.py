@@ -1,7 +1,11 @@
 #!/usr/bin/python3
+import os
+import sys
+sys.path.append('../libs')
 
 import configparser
 import socket
+import coronaprotocol
 
 config = configparser.ConfigParser()
 config.read('corona-server.conf')
@@ -12,9 +16,20 @@ port = config['Corona']['ListenPort']
 serverSocket.bind((host, int(port)))
 
 serverSocket.listen(5)
+
+cp = coronaprotocol.CoronaProtocol()
+
 while True:
-  client, addr = serverSocket.accept()
-  print('Connection from %s' % str(addr))
-  msg='Thanks for connection' + "\r\n"
-  client.send(msg.encode('ascii'))
-  client.close()
+    client, addr = serverSocket.accept()
+    
+    msg = client.recv(4096)
+    msgDecoded = cp.decodeMessage(msg.decode('ascii'))
+    
+    print(msgDecoded)
+    if msgDecoded['message'] == 'AGENT_ONLINE':
+        msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
+        client.send(msgReply.encode('ascii'))
+    else:
+        print('Invalid message')
+    
+    client.close()
