@@ -16,6 +16,7 @@ config = configparser.ConfigParser()
 config.read('corona-server.conf')
 
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 host = config['Corona']['ListenAddress']
 port = config['Corona']['ListenPort']
 serverSocket.bind((host, int(port)))
@@ -39,6 +40,7 @@ class agentPingThread (threading.Thread):
         
     def pingAgent(self, agentIp, agentPort):
         pingerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        pingerSocket.settimeout(float(config['Corona']['PingTimeout']))
         log.messageLog('Agent %s pinged' % agentIp)
         try:
             pingerSocket.connect((agentIp, int(agentPort)))
@@ -49,6 +51,9 @@ class agentPingThread (threading.Thread):
             responseDecoded = cp.decodeMessage(response.decode('ascii'))
             log.messageLog('DEBUG: Response from agent: %s' % responseDecoded['message'])
             pingerSocket.close()
+        except socket.timeout:
+            log.messageLog('Socket timeout from agent %s' % agentIp)
+            connectedAgents.removeAgent(agentIp)
         except socket.error as e:
             log.messageLog('Socket error %s from agent %s' % (e.strerror, agentIp))
             connectedAgents.removeAgent(agentIp)
