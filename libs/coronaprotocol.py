@@ -15,3 +15,11 @@ class CoronaProtocol:
 
     def decodeMessage(self, message):
         return json.loads(message)
+    
+    def agentPing(self, ip, hcid):
+        msg = self.generateMessageObject('HEALTHCHECK_PING', { 'ip' : ip, 'hcid' : hcid })
+        return json.dumps(msg)
+    
+    def agentPong(self, ip, hcid):
+        msg = self.generateMessageObject('HEALTHCHECK_PONG', { 'ip' : ip, 'hcid' : hcid })
+        return json.dumps(msg)

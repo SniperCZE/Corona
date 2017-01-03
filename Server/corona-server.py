@@ -9,6 +9,8 @@ import coronaprotocol
 import coronalogger
 import threading
 import time
+import signal
+import agents
 
 config = configparser.ConfigParser()
 config.read('corona-server.conf')
@@ -24,26 +26,49 @@ cp = coronaprotocol.CoronaProtocol()
 log = coronalogger.CoronaLogger()
 log.setLogTarget('stdout')
 
-connectedAgents = {}
+connectedAgents = agents.CoronaAgents(log)
 
 class agentPingThread (threading.Thread):
     """Thread for pinging all registered agents. If not responding, deregister that agent from agent pool"""
 
     def __init__(self):
-        threading.Thread.__init__(self)
+        threading.Thread.__init__(self, name = 'Pinger')
         
     def run(self):
         self.pingAllAgents();
         
-    def pingAgent(self, agentIp):
+    def pingAgent(self, agentIp, agentPort):
+        pingerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         log.messageLog('Agent %s pinged' % agentIp)
+        try:
+            pingerSocket.connect((agentIp, int(agentPort)))
+            message = cp.agentPing(agentIp, 'LoremIpsumDolorSitAmet')
+            log.messageLog(message)
+            pingerSocket.send(message.encode('ascii'))
+            response = pingerSocket.recv(4096)
+            responseDecoded = cp.decodeMessage(response.decode('ascii'))
+            log.messageLog('DEBUG: Response from agent: %s' % responseDecoded['message'])
+            pingerSocket.close()
+        except socket.error as e:
+            log.messageLog('Socket error %s from agent %s' % (e.strerror, agentIp))
+            connectedAgents.removeAgent(agentIp)
+        finally:
+            pingerSocket.close()
         
     def pingAllAgents(self):
         while True:
             log.messageLog('Pinging all registered agents')
-            for agentIp, agentDetails in connectedAgents.items():
-                self.pingAgent(agentIp)
+            for agentIp, agentDetails in connectedAgents.getAll().copy().items():
+                self.pingAgent(agentIp, agentDetails['port'])
             time.sleep(5)
+
+def signalHandler(signal, frame):
+    log.messageLog('Signal %s received' % signal)
+    serverSocket.shutdown(socket.SHUT_RDWR)
+    serverSocket.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signalHandler)
 
 pingThread = agentPingThread()
 pingThread.daemon = True
@@ -57,10 +82,10 @@ while True:
     
     log.messageLog(msgDecoded)
     if msgDecoded['message'] == 'AGENT_ONLINE':
-        connectedAgents[msgDecoded['parameters']['ip']] = msgDecoded['parameters']
+        connectedAgents.addAgent(msgDecoded['parameters']['ip'], msgDecoded['parameters'])
         msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
         client.send(msgReply.encode('ascii'))
     else:
-        print('Invalid message')
+        log.messageLog('Invalid message %s' % msgDecoded['message'])
     
     client.close()
