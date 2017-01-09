@@ -12,5 +12,12 @@
  */
 
 return [
-    // ...
+    
+    'db' => [
+        
+        'driver'    => 'Pdo',
+        'dsn'       => 'mysql:dbname=<DATABASE_NAME>;host=<DATABASE_HOST>;charset=utf8;username=<DATABASE_USER>;password=<PASSWORD>'
+        
+    ],
+    
 ];
