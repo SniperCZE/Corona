@@ -23,7 +23,13 @@ Frontend is PHP-based application, which shows data from Corona server and allow
 * HAProxy with enabled admin unix socket (see https://cbonte.github.io/haproxy-dconv/configuration-1.5.html#9.2)
 
 #### Server
+* Python 3
+* MySQL
+
 #### Frontend
+* Webserver
+* PHP 7.0
+* Pdo driver for MySQL
 
 ### How to install
 #### Install from debian package
