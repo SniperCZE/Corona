@@ -1,5 +1,5 @@
 # Corona
-Central management tool for HAProxy infrastructuries
+Central management tool for HAProxy infrastructures
 
 ## Basic overview of Corona
 
