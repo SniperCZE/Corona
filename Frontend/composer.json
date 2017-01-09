@@ -21,14 +21,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Application\\": "module/Application/src/",
-            "Album\\": "module/Album/src",
-            "AlbumTest\\": "module/Album/srcs"
+            "Corona\\": "module/Corona/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ApplicationTest\\": "module/Application/test/"
+            "CoronaTest\\": "module/Corona/test/"
         }
     },
     "extra": [],

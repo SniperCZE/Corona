@@ -1,6 +1,6 @@
 <?php
 
-namespace Application\Model;
+namespace Corona\Model;
 
 use RuntimeException;
 use Zend\Db\TableGateway\TableGatewayInterface;

@@ -16,5 +16,5 @@ return [
     'ZendDeveloperTools',
     'Zend\Router',
     'Zend\Validator',
-    'Application',
+    'Corona',
 ];
