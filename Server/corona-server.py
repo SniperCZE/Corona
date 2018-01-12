@@ -11,6 +11,7 @@ import threading
 import time
 import signal
 import agents
+import mysql.connector as mariadb
 
 config = configparser.ConfigParser()
 config.read('corona-server.conf')
@@ -27,7 +28,13 @@ cp = coronaprotocol.CoronaProtocol()
 log = coronalogger.CoronaLogger()
 log.setLogTarget('stdout')
 
-connectedAgents = agents.CoronaAgents(log)
+try:
+    mysqlConnData = mariadb.connect(user=config['MySQL']['User'], password=config['MySQL']['Passwd'], database=config['MySQL']['DbName'])
+except mariadb.Error as me:
+    log.messageLog("MySQL Error: {}".format(me))
+    sys.exit()
+
+connectedAgents = agents.CoronaAgents(log, mysqlConnData)
 
 class agentPingThread (threading.Thread):
     """Thread for pinging all registered agents. If not responding, deregister that agent from agent pool"""

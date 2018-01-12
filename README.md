@@ -24,6 +24,7 @@ Frontend is PHP-based application, which shows data from Corona server and allow
 
 #### Server
 * Python 3
+* Python 3 MySQL Connector
 * MySQL
 
 #### Frontend
