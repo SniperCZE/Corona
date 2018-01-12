@@ -82,15 +82,18 @@ pingThread.start()
 while True:
     client, addr = serverSocket.accept()
     
-    msg = client.recv(4096)
-    msgDecoded = cp.decodeMessage(msg.decode('ascii'))
+    try:
+        msg = client.recv(4096)
+        msgDecoded = cp.decodeMessage(msg.decode('ascii'))
     
-    log.messageLog(msgDecoded)
-    if msgDecoded['message'] == 'AGENT_ONLINE':
-        connectedAgents.addAgent(msgDecoded['parameters']['ip'], msgDecoded['parameters'])
-        msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
-        client.send(msgReply.encode('ascii'))
-    else:
-        log.messageLog('Invalid message %s' % msgDecoded['message'])
-    
+        log.messageLog(msgDecoded)
+        if msgDecoded['message'] == 'AGENT_ONLINE':
+            connectedAgents.addAgent(msgDecoded['parameters']['ip'], msgDecoded['parameters'])
+            msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
+            client.send(msgReply.encode('ascii'))
+        else:
+            log.messageLog('Invalid message %s' % msgDecoded['message'])
+    except ConnectionResetError:
+        log.messageLog("Connection reset")
+
     client.close()

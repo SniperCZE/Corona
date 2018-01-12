@@ -70,7 +70,7 @@ class agentClient ():
         try:
             self.connectToServer()
             self.serverSocket.send(message.encode('ascii'))
-            if waitForReply == True:
+            if waitForReply:
                 res = self.serverSocket.recv(4096)
                 response = res.decode('ascii')
             self.disconnectFromServer()
