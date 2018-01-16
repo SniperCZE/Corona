@@ -54,13 +54,17 @@ class agentPingThread (threading.Thread):
         log.messageLog('Agent %s pinged' % agentIp)
         try:
             pingerSocket.connect((agentIp, int(agentPort)))
-            message = cp.agentPing(agentIp, coronautils.CoronaUtils().randomStringGenerator(24))
+            sourceHcid = coronautils.CoronaUtils().randomStringGenerator(24)
+            message = cp.agentPing(agentIp, sourceHcid)
             log.messageLog(message)
             pingerSocket.send(message.encode('ascii'))
             response = pingerSocket.recv(4096)
             responseDecoded = cp.decodeMessage(response.decode('ascii'))
-            log.messageLog('DEBUG: Response from agent: %s' % responseDecoded['message'])
+            log.messageLog('DEBUG: Response from agent: %s hcid: %s' % (responseDecoded['message'], responseDecoded['parameters']['hcid']))
             pingerSocket.close()
+            if sourceHcid != responseDecoded['parameters']['hcid']:
+                log.messageLog('Agent %s HCID check failed' % agentIp)
+                connectedAgents.removeAgent(agentIp)
         except socket.timeout:
             log.messageLog('Socket timeout from agent %s' % agentIp)
             connectedAgents.removeAgent(agentIp)
