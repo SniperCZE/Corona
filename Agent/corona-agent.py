@@ -7,6 +7,7 @@ import configparser
 import socket
 import coronaprotocol
 import coronalogger
+import uuid
 
 cp = coronaprotocol.CoronaProtocol()
 log = coronalogger.CoronaLogger()
@@ -80,12 +81,34 @@ class agentClient():
 class coronaAgent():
     """Main class of Corona Agent"""
     version = '0.1'
+    agentuuid = None
     
     agentClientSocket = None
     # @type agentClientSocket agentClient
 
     agentServer = None
     # @type agentServer agentServer
+
+    def loadStoredAgentUUID(self, uuidStore):
+        fileStore = uuidStore + "/agentuuid"
+        try:
+            with open(fileStore, 'r') as uuidfile:
+
+                try:
+                    self.agentuuid = uuid.UUID(uuidfile.readline())
+                except ValueError:
+                    log.messageLog("Cannot load UUID of this agent. New agent?")
+                uuidfile.close()
+
+        except FileNotFoundError:
+            log.messageLog("UUID store doesn't exists. New agent?")
+            open(fileStore, 'a').close()
+
+    def storeAgentUUID(self, uuidStore, uuid):
+        fileStore = uuidStore + "/agentuuid"
+        with open(fileStore, 'w+') as uuidfile:
+            uuidfile.write(str(uuid))
+            uuidfile.close()
 
     def __init__(self):
         config = configparser.ConfigParser()
@@ -101,6 +124,8 @@ class coronaAgent():
         except:
             os.mkdir(config['Corona']['MetadataDir'])
 
+        self.loadStoredAgentUUID(config['Corona']['MetadataDir'])
+
         self.agentServer = agentServer()
         self.agentServer.setAgentServerDetails(agentIp, agentPort)
 
@@ -110,7 +135,14 @@ class coronaAgent():
 
         msg=self.agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, self.version))
 
-        print (msg)
+        print(msg)
+
+        data=cp.decodeMessage(msg);
+        if data['message'] == "AGENT_REGISTERED":
+            self.storeAgentUUID(config['Corona']['MetadataDir'], uuid.UUID(data['parameters']['agentuuid']))
+            self.loadStoredAgentUUID(config['Corona']['MetadataDir'])
+        else:
+            pass
 
         self.agentServer.startAgentServer()
 

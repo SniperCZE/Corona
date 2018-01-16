@@ -12,6 +12,7 @@ import time
 import signal
 import agents
 import mysql.connector as mariadb
+import uuid
 
 config = configparser.ConfigParser()
 config.read('corona-server.conf')
@@ -96,7 +97,7 @@ while True:
         log.messageLog(msgDecoded)
         if msgDecoded['message'] == 'AGENT_ONLINE':
             connectedAgents.addAgent(msgDecoded['parameters']['ip'], msgDecoded['parameters'])
-            msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True)
+            msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], True, uuid.uuid4())
             client.send(msgReply.encode('ascii'))
         else:
             log.messageLog('Invalid message %s' % msgDecoded['message'])
