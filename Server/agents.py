@@ -14,7 +14,6 @@ class CoronaAgents:
     
     def addAgent(self, agentIp, params):
         self.log.messageLog('Agent %s added to list' % agentIp)
-        self.connectedAgents[agentIp] = params
         cursor = self.mysqlConnection.cursor()
         retVal = { 'known' : False, 'uuid' : None }
         try:
@@ -29,6 +28,8 @@ class CoronaAgents:
                 retVal['known'] = True
                 retVal['uuid'] = uuid.UUID(params['uuid'])
             self.mysqlConnection.commit()
+            params['uuid'] = retVal['uuid']
+            self.connectedAgents[agentIp] = params
         except mariadb.Error as me:
             self.log.messageLog("MySQL Error: {}".format(me))
 
@@ -38,7 +39,8 @@ class CoronaAgents:
         self.log.messageLog('Agent %s removed from list' % agentIp)
         cursor = self.mysqlConnection.cursor()
         try:
-            cursor.execute("DELETE from agents where agent_ip=INET_ATON('{}') and agent_port={} limit 1;".format(self.connectedAgents[agentIp]['ip'], self.connectedAgents[agentIp]['port']))
+            data = (self.connectedAgents[agentIp]['ip'], self.connectedAgents[agentIp]['port'], self.connectedAgents[agentIp]['uuid'].bytes)
+            cursor.execute("UPDATE agents set is_online=0 where agent_ip=INET_ATON(%s) and agent_port=%s and agent_uuid=%s limit 1;", data)
             self.mysqlConnection.commit()
         except mariadb.Error as me:
             self.log.messageLog("MySQL Error: {}".format(me))
