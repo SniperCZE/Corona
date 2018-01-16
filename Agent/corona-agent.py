@@ -8,12 +8,9 @@ import socket
 import coronaprotocol
 import coronalogger
 
-version = '0.1'
 cp = coronaprotocol.CoronaProtocol()
 log = coronalogger.CoronaLogger()
 log.setLogTarget('stdout')
-
-agentClientSocket = None
 
 class agentServer ():
     """Accepting messages from server. It's used for healthchecks, server status messages and commands"""
@@ -43,7 +40,7 @@ class agentServer ():
                 pass
 
 
-class agentClient ():
+class agentClient():
     """Sending messages initialized by agent"""
 
     serverHost = ''
@@ -80,27 +77,41 @@ class agentClient ():
             log.messageLog("Cannot connect to Corona server on {}:{}. Exiting.".format(self.serverHost, self.serverPort))
             sys.exit()
 
+class coronaAgent():
+    """Main class of Corona Agent"""
+    version = '0.1'
+    
+    agentClientSocket = None
+    # @type agentClientSocket agentClient
 
+    agentServer = None
+    # @type agentServer agentServer
 
+    def __init__(self):
+        config = configparser.ConfigParser()
+        config.read('corona-agent.conf')
 
-config = configparser.ConfigParser()
-config.read('corona-agent.conf')
+        agentIp = config['Corona']['ListenAddress']
+        agentPort = config['Corona']['ListenPort']
+        serverHost = config['Corona']['CoronaServer']
+        serverPort = config['Corona']['CoronaServerPort']
 
-agentIp = config['Corona']['ListenAddress']
-agentPort = config['Corona']['ListenPort']
-serverHost = config['Corona']['CoronaServer']
-serverPort = config['Corona']['CoronaServerPort']
+        try:
+            os.stat(config['Corona']['MetadataDir'])
+        except:
+            os.mkdir(config['Corona']['MetadataDir'])
 
-agentServer = agentServer()
-agentServer.setAgentServerDetails(agentIp, agentPort)
+        self.agentServer = agentServer()
+        self.agentServer.setAgentServerDetails(agentIp, agentPort)
 
-# thread user for sending messages into server
-agentClientSocket = agentClient()
-# @type agentClientSocket agentClient
-agentClientSocket.setServerDetails(serverHost, serverPort)
+        # thread user for sending messages into server
+        self.agentClientSocket = agentClient()
+        self.agentClientSocket.setServerDetails(serverHost, serverPort)
 
-msg=agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, version))
+        msg=self.agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, self.version))
 
-print (msg)
+        print (msg)
 
-agentServer.startAgentServer()
+        self.agentServer.startAgentServer()
+
+agent = coronaAgent()
