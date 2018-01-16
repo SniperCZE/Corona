@@ -98,9 +98,9 @@ while True:
         if msgDecoded['message'] == 'AGENT_ONLINE':
             agentRegInfo = connectedAgents.addAgent(msgDecoded['parameters']['ip'], msgDecoded['parameters'])
             if agentRegInfo['known']:
-                msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], agentRegInfo['uuid'])
-            else:
                 msgReply = cp.agentMarkedAsOnline(msgDecoded['parameters']['ip'], agentRegInfo['uuid'])
+            else:
+                msgReply = cp.agentRegistered(msgDecoded['parameters']['ip'], agentRegInfo['uuid'])
             client.send(msgReply.encode('ascii'))
         else:
             log.messageLog('Invalid message %s' % msgDecoded['message'])
