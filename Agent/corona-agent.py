@@ -133,7 +133,7 @@ class coronaAgent():
         self.agentClientSocket = agentClient()
         self.agentClientSocket.setServerDetails(serverHost, serverPort)
 
-        msg=self.agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, self.version))
+        msg=self.agentClientSocket.sendMessage(cp.agentIsOnline(agentIp, agentPort, self.version, self.agentuuid))
 
         print(msg)
 

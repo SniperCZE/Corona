@@ -9,14 +9,22 @@ parameters:
 - ip [string] - ip of agent host. This is used as uniq ID of agent
 - port [integer] - tcp port where agent is listening on
 - version [float] - version of agent deployed on host
-server response: AGENT_REGISTERED
+- uuid [string] - UUID of agent if agent already has one, None elsewhere
+server response: AGENT_REGISTERED (if new agent appears) or AGENT_MARKED_ONLINE (if agent has been seen already)
 
 message: AGENT_REGISTERED
 sender: server
 detail: acknowledge of agent recognized as online by server
 parameters:
 - ip [string] - ip of agent
-- known [bool] - true if server already knows this agent's IP address, false if new agent registered
+- agentuuid [string] - UUID of newly registered agents
+
+message: AGENT_MARKED_ONLINE
+sender: server
+detail: acknowledge of agent recognized as online by server
+parameters:
+- ip [string] - ip of agent
+- agentuuid [string] - UUID of agent
 
 message: HEALTHCHECK_PING
 sender: server

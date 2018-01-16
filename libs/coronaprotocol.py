@@ -6,19 +6,19 @@ class CoronaProtocol:
         """Generation of data object from message data"""
         return {'message' : messageType, 'parameters' : parameters}
 
-    def agentIsOnline(self, ip, port, version):
+    def agentIsOnline(self, ip, port, version, uuid=None):
         """Agent is reporting it's state as online"""
-        msg = self.generateMessageObject('AGENT_ONLINE', { 'ip' : ip, 'port' : port, 'version' : version })
+        msg = self.generateMessageObject('AGENT_ONLINE', { 'ip' : ip, 'port' : port, 'version' : version, 'uuid' : str(uuid) })
         return json.dumps(msg)
 
-    def agentRegistered(self, ip, known, agentuuid):
+    def agentRegistered(self, ip, agentuuid):
         """Server sees this agent for the first time, so register it and generate UUID"""
-        msg = self.generateMessageObject('AGENT_REGISTERED', { 'ip' : ip, 'known' : known, 'agentuuid' : str(agentuuid) })
+        msg = self.generateMessageObject('AGENT_REGISTERED', { 'ip' : ip, 'agentuuid' : str(agentuuid) })
         return json.dumps(msg)
 
-    def agentMarkedAsOnline(self, ip, know):
+    def agentMarkedAsOnline(self, ip, agentuuid):
         """Server already knows this agent, only marked as online"""
-        msg = self.generateMessageObject('AGENT_MARKED_ONLINE', { 'ip' : ip, 'known' : known })
+        msg = self.generateMessageObject('AGENT_MARKED_ONLINE', { 'ip' : ip, 'agentuuid' : str(agentuuid) })
         return json.dumps(msg)
 
     def decodeMessage(self, message):
