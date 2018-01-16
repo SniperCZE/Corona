@@ -50,3 +50,16 @@ class CoronaAgents:
         
     def getAll(self):
         return self.connectedAgents
+
+    def populateListFromMysql(self):
+        """After server start, populates internal agent list with all agents marked as online in database"""
+        self.log.messageLog("Populating internal list of online agents from database")
+        cursor = self.mysqlConnection.cursor()
+        try:
+            cursor.execute("SELECT INET_NTOA(agent_ip) as aip, agent_port, agent_version, hex(agent_uuid) as hexuuid from agents where is_online=1")
+            for aip, agent_port, agent_version, hexuuid in cursor:
+                data = { 'ip' : aip, 'port' : int(agent_port), 'version' : agent_version, 'uuid' : uuid.UUID(hexuuid) }
+                self.connectedAgents[aip] = data;
+        except mariadb.Error as me:
+            self.log.messageLog("MySQL Error: {}".format(me))
+            self.connectedAgents = {}

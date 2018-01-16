@@ -44,7 +44,8 @@ class agentPingThread (threading.Thread):
         threading.Thread.__init__(self, name = 'Pinger')
         
     def run(self):
-        self.pingAllAgents();
+        connectedAgents.populateListFromMysql()
+        self.pingAllAgents()
         
     def pingAgent(self, agentIp, agentPort):
         pingerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
