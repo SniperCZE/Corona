@@ -141,6 +141,9 @@ class coronaAgent():
         if data['message'] == "AGENT_REGISTERED":
             self.storeAgentUUID(config['Corona']['MetadataDir'], uuid.UUID(data['parameters']['agentuuid']))
             self.loadStoredAgentUUID(config['Corona']['MetadataDir'])
+            log.messageLog("Agent registered to server {}:{} successfully".format(serverHost, serverPort))
+        elif data['message'] == "AGENT_MARKED_ONLINE":
+            log.messageLog("Connected to server {}:{} successfully".format(serverHost, serverPort))
         else:
             pass
 
