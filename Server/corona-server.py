@@ -7,6 +7,7 @@ import configparser
 import socket
 import coronaprotocol
 import coronalogger
+import coronautils
 import threading
 import time
 import signal
@@ -53,7 +54,7 @@ class agentPingThread (threading.Thread):
         log.messageLog('Agent %s pinged' % agentIp)
         try:
             pingerSocket.connect((agentIp, int(agentPort)))
-            message = cp.agentPing(agentIp, 'LoremIpsumDolorSitAmet')
+            message = cp.agentPing(agentIp, coronautils.CoronaUtils().randomStringGenerator(24))
             log.messageLog(message)
             pingerSocket.send(message.encode('ascii'))
             response = pingerSocket.recv(4096)
